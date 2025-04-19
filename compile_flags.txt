@@ -1,5 +1,10 @@
--std=c23
+-std=c2x
 -Wall
 -Wextra
 -pedantic
 -g
+-I
+c:/msys64/mingw64/include
+
+
+

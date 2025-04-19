@@ -2,7 +2,6 @@
 /// COMPILARE con : clang SOURCEFILE -lSDL3 -lSDL3_image -lGL -Wall -pedantic -std=c23 -g
 ///
 
-#include <SDL3/SDL_init.h>
 #define SDL_MAIN_USE_CALLBACKS 1 /// usa le callback al posto di main()
 #include <SDL3/SDL.h>
 #include <SDL3/SDL_main.h>
@@ -166,67 +165,67 @@ SDL_AppResult SDL_AppEvent(void *appstate, SDL_Event *event)
         state->running = false;
         return SDL_APP_SUCCESS;
     }
-
-    switch (event->key.key)
+    if(event->type == SDL_EVENT_KEY_DOWN)
     {
-    case SDLK_F11:
-        if (state->is_Fullscreen == false)
-        {
-            SDL_SetWindowFullscreen(state->window, true);
-            state->is_Fullscreen = true;
-        }
-        else
-        {
-            SDL_SetWindowFullscreen(state->window, false);
-            state->is_Fullscreen = false;
-        }
-        break;
 
-    case SDLK_RIGHT:
-        if (state->file_idx > state->total_files - 1)
+        switch (event->key.key)
         {
-            state->file_idx = 0;
-            state->file_list = state->file_head;
-            SDL_Log("FILE_IDX : %5zu\tFILE : %s\n ", state->file_idx, state->file_list);
+        case SDLK_F11:
+            if (state->is_Fullscreen == false)
+            {
+                SDL_SetWindowFullscreen(state->window, true);
+                state->is_Fullscreen = true;
+            }
+            else
+            {
+                SDL_SetWindowFullscreen(state->window, false);
+                state->is_Fullscreen = false;
+            }
+            break;
+    
+        case SDLK_RIGHT:
+            if (state->file_idx > state->total_files - 1)
+            {
+                state->file_idx = 0;
+                state->file_list = state->file_head;
+                SDL_Log("FILE_IDX : %5zu\tFILE : %s\n ", state->file_idx, state->file_list);
+            }
+            else
+            {
+                state->file_idx++;
+                state->file_list += state->MAX_CHARS;
+                printf("FILE_IDX : %5zu\tFILE : %s\n ", state->file_idx, state->file_list);
+            }
+    
+            SDL_Log("Premuto tasto l");
+            break;
+        case SDLK_LEFT:
+            if (state->file_idx == 0)
+            {
+                state->file_list = state->file_head + (state->total_files * state->MAX_CHARS) - state->MAX_CHARS;
+                state->file_idx = state->total_files - 1;
+                SDL_Log("FILE_IDX : %5zuFILE : %s\n ", state->file_idx, state->file_list);
+            }
+            else
+            {
+                state->file_idx--;
+                state->file_list -= state->MAX_CHARS;
+                printf("FILE_IDX : %5zuFILE : %s\n ", state->file_idx, state->file_list);
+            }
+            SDL_Log("Premuto tasto h");
+            break;
+        default:
+            break;
         }
-        else
-        {
-            state->file_idx++;
-            state->file_list += state->MAX_CHARS;
-            printf("FILE_IDX : %5zu\tFILE : %s\n ", state->file_idx, state->file_list);
-        }
-
-        SDL_Log("Premuto tasto l");
-        break;
-    case SDLK_LEFT:
-        if (state->file_idx == 0)
-        {
-            state->file_list = state->file_head + (state->total_files * state->MAX_CHARS) - state->MAX_CHARS;
-            state->file_idx = state->total_files - 1;
-            SDL_Log("FILE_IDX : %5zuFILE : %s\n ", state->file_idx, state->file_list);
-        }
-        else
-        {
-            state->file_idx--;
-            state->file_list -= state->MAX_CHARS;
-            printf("FILE_IDX : %5zuFILE : %s\n ", state->file_idx, state->file_list);
-        }
-        SDL_Log("Premuto tasto h");
-        break;
-    default:
-        break;
     }
-    switch (event->type)
+    if(event->type == SDL_EVENT_WINDOW_RESIZED)
     {
-    case SDL_EVENT_WINDOW_RESIZED:
         SDL_GetWindowSizeInPixels(state->window, &state->NEW_WIN_WIDTH, &state->NEW_WIN_HEIGHT);
         SDL_Log("WIndow resized , new w : %5d\tnew h : %5d", state->NEW_WIN_WIDTH, state->NEW_WIN_HEIGHT);
         state->WIN_WIDTH = state->NEW_WIN_WIDTH;
         state->WIN_HEIGHT = state->NEW_WIN_HEIGHT;
-        break;
-    default:
-        break;
     }
+
     return SDL_APP_CONTINUE;
 }
 
@@ -245,7 +244,7 @@ SDL_AppResult SDL_AppIterate(void *appstate)
     state->texture = IMG_LoadTexture(state->renderer, state->file_list);
     if (state->texture == NULL)
     {
-        SDL_Log("Impossibile creare Texture : %s", SDL_GetError());
+        // SDL_Log("Impossibile creare Texture : %s", SDL_GetError());
         return SDL_APP_CONTINUE;
     }
 
@@ -253,13 +252,13 @@ SDL_AppResult SDL_AppIterate(void *appstate)
 
     // ratio = w / h
     float src_ratio = (float)state->texture->w / (float)state->texture->h;
-    SDL_Log("texture_width : %5d\ttexture_height : %5d", state->texture->w, state->texture->h);
-    SDL_Log("src_ratio : %2.f", src_ratio);
+    // SDL_Log("texture_width : %5d\ttexture_height : %5d", state->texture->w, state->texture->h);
+    // SDL_Log("src_ratio : %2.f", src_ratio);
 
     // DEST RECT
     // LEGGO SIZE ATTUALE DELLA WINDOW
     SDL_GetWindowSize(state->window, &state->WIN_WIDTH, &state->WIN_HEIGHT);
-    SDL_Log("WINDOW SIZE w : %5d\th : %5d", state->WIN_WIDTH, state->WIN_HEIGHT);
+    // SDL_Log("WINDOW SIZE w : %5d\th : %5d", state->WIN_WIDTH, state->WIN_HEIGHT);
     // IMPOSTO WIDTH DEL RENDERING IMMAGINE A WIN WIDTH
     float dest_width = (float)state->WIN_WIDTH;
     // CALCOLO DEL RENDERING IMAGINE HEIGHT = WIDTH / RATIO
@@ -276,8 +275,8 @@ SDL_AppResult SDL_AppIterate(void *appstate)
         y_offset = 0.0f;
     }
     state->dest_rect = (SDL_FRect){.w = dest_width, .h = dest_height, .x = x_offset, .y = y_offset};
-    SDL_Log("dest_rec w : %6.1f\th : %6.1f\tx_offset : %6.1fd\ty_offset : %6.1f ", dest_width, dest_height, x_offset,
-            y_offset);
+    // SDL_Log("dest_rec w : %6.1f\th : %6.1f\tx_offset : %6.1fd\ty_offset : %6.1f ", dest_width, dest_height, x_offset,
+    //         y_offset);
 
     SDL_SetRenderDrawColorFloat(state->renderer, state->color.red, state->color.green, state->color.blue,
                                 state->color.alpha);

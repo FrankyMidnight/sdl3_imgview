@@ -1,8 +1,3 @@
-#include <SDL3/SDL_keycode.h>
-#include <SDL3/SDL_scancode.h>
-#include <SDL3/SDL_stdinc.h>
-#include <SDL3/SDL_video.h>
-#include <stddef.h>
 #define SDL_MAIN_NOIMPL
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -26,12 +21,12 @@ SDL_Texture *texture = NULL;
 SDL_FRect dest_rect = {};
 bool running = true;
 const char *path = ".";
-int Init();
-void Quit();
-void Draw();
-void Update();
-void update_windowsize();
-void load_dir();
+int Init(void);
+void Quit(void);
+void Draw(void);
+void Update(void);
+void update_windowsize(void);
+void load_dir(void);
 #define MAX_CHARS 256
 DIR *directory = NULL;
 char *file_list;
@@ -71,6 +66,7 @@ int main(int argc, char **argv)
             SDL_Delay(target_delay - delta_time); // delay =  target_delay – delta time
         }
     }
+    Quit();
     return 0;
 }
 
@@ -162,15 +158,6 @@ void Update()
 {
     // LOOP
     SDL_Event event;
-
-    // current_time = SDL_GetTicks();
-    // SDL_Time delta_time = current_time -last_time;
-    // uint64_t fps = delta_time / 1000;
-    // SDL_Log("FPS : %ld", fps);
-    // last_time = current_time;
-    // RENDER !!!
-    
-
     // SVUOTA QUEUE EVENTI
     while (SDL_PollEvent(&event))
     {
@@ -183,54 +170,58 @@ void Update()
         {
             update_windowsize();
         }
-
-        switch (event.key.scancode)
+        if(event.type == SDL_EVENT_KEY_DOWN)
         {
 
-            // ESCI SU PRESSIONE TASTO ESCAPE E TASTO Q
-
-        case SDL_SCANCODE_ESCAPE:
-        case SDL_SCANCODE_Q:
-            running = false;
-            break;
-        case SDL_SCANCODE_F11:
-            if (is_fullscreen == true)
+            switch (event.key.scancode)
             {
-                SDL_SetWindowFullscreen(window, false);
-                is_fullscreen = false;
+                // ESCI SU PRESSIONE TASTO ESCAPE E TASTO Q
+            case SDL_SCANCODE_ESCAPE:
+            case SDL_SCANCODE_Q:
+                running = false;
+                break;
+                // FULLSCREEN
+            case SDL_SCANCODE_F11:
+                if (is_fullscreen == true)
+                {
+                    SDL_SetWindowFullscreen(window, false);
+                    is_fullscreen = false;
+                }
+                else
+                {
+                    SDL_SetWindowFullscreen(window, true);
+                    is_fullscreen = true;
+                }
+                break;
+                // NEXT PIC
+            case SDL_SCANCODE_RIGHT:
+                if (file_idx > total_files - 1)
+                {
+                    file_idx = 0;
+                    file_list = file_head;
+                }
+                else
+                {
+                    file_idx++;
+                    file_list += MAX_CHARS;
+                }
+                break;
+                // PREVIOUS PIC
+            case SDL_SCANCODE_LEFT:
+                if (file_idx == 0)
+                {
+                    file_list = file_head + ((int)total_files * MAX_CHARS) - MAX_CHARS;
+                    file_idx = total_files - 1;
+                }
+                else
+                {
+                    file_idx--;
+                    file_list -= MAX_CHARS;
+                }
+                break;
+            default:
+                break;
             }
-            else
-            {
-                SDL_SetWindowFullscreen(window, true);
-                is_fullscreen = true;
-            }
-            break;
-        case SDL_SCANCODE_RIGHT:
-            if (file_idx > total_files - 1)
-            {
-                file_idx = 0;
-                file_list = file_head;
-            }
-            else
-            {
-                file_idx++;
-                file_list += MAX_CHARS;
-            }
-            break;
-        case SDL_SCANCODE_LEFT:
-            if (file_idx == 0)
-            {
-                file_list = file_head + ((int)total_files * MAX_CHARS) - MAX_CHARS;
-                file_idx = total_files - 1;
-            }
-            else
-            {
-                file_idx--;
-                file_list -= MAX_CHARS;
-            }
-            break;
-        default:
-            break;
         }
     }
 }
@@ -317,7 +308,7 @@ void update_windowsize()
     int w = 0;
     int h = 0;
     SDL_GetWindowSizeInPixels(window, &w, &h);
-    SDL_Log("WIndow resized , new w : %5d\tnew h : %5d", w, h);
+    SDL_Log("Window resized , new w : %5d\tnew h : %5d", w, h);
     WIN_WIDTH = w;
     WIN_HEIGHT = h;
     Draw();
