@@ -125,7 +125,7 @@ void Draw()
     // SET TEXTURE MODE NEAREST
     if(!SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST))
     {
-        SDL_Log("Impossible to set scale mode nearest : %s",SDL_GetError());
+        SDL_Log("Error setting scale mode nearest : %s",SDL_GetError());
     }
 
     // SRC RECT
@@ -157,8 +157,6 @@ void Draw()
     dest_rect = (SDL_FRect){.w = dest_width, .h = dest_height, .x = x_offset, .y = y_offset};
     // SDL_Log("dest_rec w : %6.1f\th : %6.1f\tx_offset : %6.1fd\ty_offset : %6.1f ", dest_width, dest_height, x_offset,
     //         y_offset);
-    // DELAY A LITTLE
-    // usleep(100);
     SDL_RenderClear(renderer);
     SDL_RenderTexture(renderer, texture, NULL, &dest_rect);
     SDL_RenderPresent(renderer);
