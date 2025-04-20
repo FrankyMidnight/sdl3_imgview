@@ -1,3 +1,6 @@
+#include <SDL3/SDL_error.h>
+#include <SDL3/SDL_render.h>
+#include <SDL3/SDL_surface.h>
 #define SDL_MAIN_NOIMPL
 #include <SDL3/SDL.h>
 #include <SDL3_image/SDL_image.h>
@@ -94,6 +97,7 @@ int Init()
         SDL_Log("Errore di inizializzazione del renderer : %s", SDL_GetError());
         return 4;
     }
+    
     return 0;
 }
 void Quit()
@@ -117,6 +121,11 @@ void Draw()
     {
         // SDL_Log("Impossibile creare Texture : %s", SDL_GetError());
         return;
+    }
+    // SET TEXTURE MODE NEAREST
+    if(!SDL_SetTextureScaleMode(texture, SDL_SCALEMODE_NEAREST))
+    {
+        SDL_Log("Impossible to set scale mode nearest : %s",SDL_GetError());
     }
 
     // SRC RECT
